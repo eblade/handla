@@ -17,14 +17,14 @@ defmodule Builders do
   end
 
   def test_games(categories) do
-    List.new("default")
-    |> List.with_items([
-      Item.new("quake (b)", categories.lookup_by_short("b")),
-      Item.new("doom (c)", categories.lookup_by_short("c")),
-      Item.new("wolf3d (b)", categories.lookup_by_short("b")),
-      Item.new("worms (a)", categories.lookup_by_short("a")),
-      Item.new("call of duty (a)", categories.lookup_by_short("a")),
-      Item.new("farcry (c)", categories.lookup_by_short("c"))
+    list = List.new("default")
+    List.with_items(list, [
+      Item.new("quake (b)", Categories.lookup_by_short(categories, "b")),
+      Item.new("doom (c)", Categories.lookup_by_short(categories, "c")),
+      Item.new("wolf3d (b)", Categories.lookup_by_short(categories, "b")),
+      Item.new("worms (a)", Categories.lookup_by_short(categories, "a")),
+      Item.new("call of duty (a)", Categories.lookup_by_short(categories, "a")),
+      Item.new("farcry (c)", Categories.lookup_by_short(categories, "c"))
     ])
   end
 end

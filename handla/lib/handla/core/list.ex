@@ -20,7 +20,7 @@ defmodule Handla.Core.List do
   def sort(list) do
     %__MODULE__{
       name: list.name,
-      items: Enum.sort_by(list.items, &({&1.category.ordinal,  &2.text}), :asc),
+      items: Enum.sort_by(list.items, &({&1.category.ordinal,  &1.text}), :asc),
       timestamp: list.timestamp
     }
   end
