@@ -1,7 +1,7 @@
 defmodule Handla.Core.Item do
   defstruct ~w[text category comment checked timestamp]a
 
-  def new(text, category, comment \\ "", checked \\ true) do
+  def new(text, category, comment \\ "", checked \\ false) do
     %__MODULE__{
       text: text,
       category: category,
@@ -11,37 +11,39 @@ defmodule Handla.Core.Item do
     }
   end
 
-  defp edit(item, new_text \\ nil, new_category \\ nil, new_comment \\ nil, new_checked \\ nil) do
-    %__MODULE__{
-      text:     (if new_text == nil,     do: item.text,     else: new_text),
-      category: (if new_category == nil, do: item.category, else: new_category),
-      comment:  (if new_comment == nil,  do: item.comment,  else: new_comment),
-      checked:  (if new_checked == nil,  do: item.checked,  else: new_checked),
-      timestamp: DateTime.utc_now
-    }
+  defp touch(item) do
+    %{item | timestamp: DateTime.utc_now}
   end
 
   def change_text(item, new_text) do
-    edit(item, new_text)
+    %{item | text: new_text, timestamp: DateTime.utc_now}
   end
 
   def change_category(item, new_category) do
-    edit(item, nil, new_category)
+    %{item | category: new_category, timestamp: DateTime.utc_now}
   end
 
   def change_comment(item, new_comment) do
-    edit(item, nil, nil, new_comment)
+    %{item | comment: new_comment} |> touch
   end
 
   def remove_comment(item) do
-    edit(item, nil, nil, "")
+    %{item | comment: "", timestamp: DateTime.utc_now}
   end
 
   def check(item) do
-    edit(item, nil, nil, nil, true)
+    %{item | checked: true, timestamp: DateTime.utc_now}
   end
 
   def uncheck(item) do
-    edit(item, nil, nil, nil, false)
+    %{item | checked: false} |> touch
+  end
+
+  def reset(item) do
+    item |> remove_comment |> uncheck
+  end
+
+  def equals?(left, right) do
+    left.text == right.text && left.category.short == right.category.short
   end
 end

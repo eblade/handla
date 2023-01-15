@@ -19,12 +19,12 @@ defmodule Builders do
   def test_games(categories) do
     list = List.new("default")
     List.with_items(list, [
-      Item.new("quake (b)", Categories.lookup_by_short(categories, "b")),
-      Item.new("doom (c)", Categories.lookup_by_short(categories, "c")),
-      Item.new("wolf3d (b)", Categories.lookup_by_short(categories, "b")),
-      Item.new("worms (a)", Categories.lookup_by_short(categories, "a")),
-      Item.new("call of duty (a)", Categories.lookup_by_short(categories, "a")),
-      Item.new("farcry (c)", Categories.lookup_by_short(categories, "c"))
+      Item.new("quake (b)", Categories.lookup_by_short(categories, "b"), "", true),
+      Item.new("doom (c)", Categories.lookup_by_short(categories, "c"), "", true),
+      Item.new("wolf3d (b)", Categories.lookup_by_short(categories, "b"), "", true),
+      Item.new("worms (a)", Categories.lookup_by_short(categories, "a"), "", true),
+      Item.new("call of duty (a)", Categories.lookup_by_short(categories, "a"), "", true),
+      Item.new("farcry (c)", Categories.lookup_by_short(categories, "c"), "", true)
     ])
   end
 end
