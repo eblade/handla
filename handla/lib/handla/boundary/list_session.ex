@@ -40,6 +40,10 @@ defmodule Handla.Boundary.ListSession do
     GenServer.call(__MODULE__, {:uncheck_item, item})
   end
 
+  def get_categories() do
+    GenServer.call(__MODULE__, :get_categories)
+  end
+
   def init({list, categories}) do
     {:ok, {list, categories}}
   end
@@ -59,5 +63,9 @@ defmodule Handla.Boundary.ListSession do
     unchecked_item = Item.uncheck(item)
     List.replace(list, item, unchecked_item)
     {:reply, unchecked_item, {list, categories}}
+  end
+
+  def handle_call(:get_categories, _from, {list, categories}) do
+    {:reply, categories, {list, categories}}
   end
 end
