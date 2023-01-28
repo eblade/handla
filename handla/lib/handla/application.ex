@@ -8,12 +8,10 @@ defmodule Handla.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Handla.Worker.start_link(arg)
-      # {Handla.Worker, arg}
+      { Handla.Boundary.ListSession,
+        [name: Handla.Boundary.ListSession] }
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Handla.Supervisor]
     Supervisor.start_link(children, opts)
   end
