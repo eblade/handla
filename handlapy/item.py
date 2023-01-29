@@ -1,5 +1,6 @@
 from enum import Enum
 from .category import Category, Categories
+from itertools import groupby
 
 
 class ItemState(Enum):
@@ -13,6 +14,11 @@ class Item:
         self.category = category
         self.state = state
         self.comment = comment
+
+    def __repr__(self):
+        x = 'x' if self.state is ItemState.checked else ' '
+        comment = f' ({self.comment})' if self.comment else ''
+        return f'[{x}] {self.category.short}/{self.name}{comment}'
 
     def rename(self, name):
         self.name = name
@@ -62,7 +68,23 @@ class ItemList:
                 if (category_short, name) in keys:
                     raise KeyError(f'Duplicate name: {category_short}/{name}')
                 category = categories[category_short]
-                item = Item(name, category_short, ItemState.checked)
+                item = Item(name, category, ItemState.checked)
                 self.items.append(item)
                 keys.add((category_short, name))
+        return self
 
+    def by_category(self):
+        in_order = sorted((item for item in self.items), key=lambda x: (x.category.ordinal, x.name))
+        grouped = groupby(in_order, lambda x: x.category)
+        return {
+            'categories': [
+                {
+                    'name': group[0].name,
+                    'short': group[0].short,
+                    'items': [item for item in group[1]]
+                } for group in grouped
+            ]
+        }
+
+    def get_item(self, category_short, item_name):
+        return next((item for item in self.items if item.category.short == category_short and item.name == item_name), None)

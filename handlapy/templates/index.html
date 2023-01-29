@@ -1,0 +1,35 @@
+<html>
+<head>
+    <title>Handla</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    {% include 'styles.css' %}
+    </style>
+</head>
+<body>
+    <h1>Listan</h1>
+    <input id="search" autofocus onkeyup="filter_changed()" />
+    <div id="items">
+    </div>
+
+    <template id="item-template">
+<style>
+label {
+    font-size: 16pt;
+}
+
+.processing {
+    background-color: #ffaa55;
+}
+</style>
+        <div id="container">
+            <input id="check" type="checkbox" />
+            <label id="label"/>
+        </div>
+    </template>
+
+    <script>
+    {% include 'app.js' %}
+    </script>
+</body>
+</html>

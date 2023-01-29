@@ -18,12 +18,12 @@ class Categories:
         self._index = {cat.short: cat for cat in self.categories}
         self._indexed = True
 
-    def __get__(self, key):
+    def __getitem__(self, key):
         if not self._indexed:
             self._make_index()
         return self._index[key]
 
-    def __in__(self, key):
+    def __contains__(self, key):
         if not self._indexed:
             self._make_index()
         return key in self._index
@@ -34,7 +34,7 @@ class Categories:
         keys = set()
         with open(path, 'r') as f:
             ordinal = 0
-            for line in f.readline():
+            for line in f.readlines():
                 line = line.strip()
                 if not line:
                     continue
@@ -45,7 +45,8 @@ class Categories:
                 name = name.strip()
                 if short in keys:
                     raise KeyError(f'Duplicate category key: {short}')
-                category = Categories(short, name, ordinal)
+                category = Category(name, short, ordinal)
                 ordinal += 1
                 keys.add(short)
                 self.categories.append(category)
+        return self
