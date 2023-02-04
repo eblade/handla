@@ -1,7 +1,7 @@
 <html>
 <head>
     <title>Handla</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <style>
     {% include 'styles.css' %}
     </style>
@@ -14,8 +14,24 @@
 
     <template id="item-template">
 <style>
-label {
-    font-size: 16pt;
+#label {
+    font-size: 20pt;
+    padding-left: 3pt;
+    cursor: pointer;
+}
+
+#comment {
+    font-size: 12pt;
+    padding-left: 3pt;
+    font-style: italic;
+}
+
+#edit {
+    font-size: 12pt;
+    padding-left: 3pt;
+    cursor: pointer;
+    color: #888;
+    text-decoration: none;
 }
 
 .processing {
@@ -23,8 +39,9 @@ label {
 }
 </style>
         <div id="container">
-            <input id="check" type="checkbox" />
-            <label id="label"/>
+            <span id="label"></span>
+            <span id="comment"></span>
+            <a id="edit">[ÄNDRA]</a>
         </div>
     </template>
 

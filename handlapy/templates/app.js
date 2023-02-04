@@ -7,18 +7,50 @@ class Item extends HTMLElement {
     set state(val) { this.setAttribute('state', val); this.update(); }
     get category() { return this.getAttribute('category'); }
     set category(val) { this.setAttribute('category', val); }
+    get synced() { return parseInt(this.getAttribute('synced')); }
+    set synced(val) { this.setAttribute('synced', val); this.update(); }
 
     is_unchecked() { return this.state === 0; }
     hide() { this.style.display = "none"; }
-    show() { this.style.display = ""; }
+    show() {
+        let label = this.shadowRoot.getElementById('label');
+        this.style.display = "";
+        label.style.color = "#222";
+        label.innerText = this.label;
+    }
+    show_for_add() {
+        let label = this.shadowRoot.getElementById('label');
+        this.style.display = "";
+        label.style.textDecoration = "none";
+        if (this.state == 1) {
+            label.innerText = "+ " + this.label;
+            label.style.color = "#282";
+        } else {
+            label.innerText = "- " + this.label;
+            label.style.color = "#822";
+        }
+    }
 
     constructor() { super(); }
 
     update() {
         let label = this.shadowRoot.getElementById('label');
         label.innerText = this.label;
-        let box = this.shadowRoot.getElementById('check');
-        box.checked = this.state;
+        let comment = this.shadowRoot.getElementById('comment');
+        comment.innerText = this.comment;
+        let container = this.shadowRoot.getElementById('container');
+        if (this.state == 1) {
+            label.style.textDecoration = "line-through";
+            label.style.color = "#888";
+        } else {
+            label.style.textDecoration = "none";
+            label.style.color = "#222";
+        }
+        if (this.synced == 1) {
+            container.classList.remove("processing");
+        } else {
+            container.classList.add("processing");
+        }
     }
 
     connectedCallback() {
@@ -28,16 +60,24 @@ class Item extends HTMLElement {
         shadowRoot.appendChild(clone);
         let label = shadowRoot.getElementById('label');
         label.innerText = this.label;
-        let box = shadowRoot.getElementById('check');
-        box.checked = this.state;
+        let comment = shadowRoot.getElementById('comment');
+        if (this.comment == "null") {
+            this.comment = "";
+        }
+        comment.innerText = this.comment;
+        let edit = shadowRoot.getElementById('edit');
+        edit.href = `edit-itm/${this.category}/${this.label}`;
 
         let self = this;
         label.addEventListener('click', e => {
-            self.shadowRoot.getElementById("container").classList.add("processing");
             let op = "uncheck";
             if (this.is_unchecked()) {
                 op = "check";
+                self.state = 1;
+            } else {
+                self.state = 0;
             }
+            self.synced = 0;
             let req = new XMLHttpRequest();
             req.open('PUT', `itm/${this.category}/${this.label}/${op}`, true);
             req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -45,7 +85,7 @@ class Item extends HTMLElement {
                 if (this.status == 200) {
                     let json = JSON.parse(this.response);
                     self.state = json.state;
-                    self.shadowRoot.getElementById("container").classList.remove("processing");
+                    self.synced = 1;
                 }
             };
             req.send();
@@ -69,7 +109,7 @@ function reload_items() {
                 itemsContainer.innerHTML += `<h2>${cat.name}</h2><div id="cat_${cat.short}"></div>`
                 catContainer = document.getElementById(`cat_${cat.short}`);
                 Object.values(cat.items).forEach(itm => {
-                    catContainer.innerHTML += `<x-item label="${itm.name}" comment="${itm.comment}" state="${itm.state}" category="${cat.short}" />`;
+                    catContainer.innerHTML += `<x-item label="${itm.name}" comment="${itm.comment}" state="${itm.state}" category="${cat.short}" synced="1" />`;
                 });
             });
         filter_changed();
@@ -87,7 +127,7 @@ function filter_changed() {
     itemList.forEach(item => {
         if (filter) {
             if (item.label.toUpperCase().indexOf(filter) > -1) {
-                item.show();
+                item.show_for_add();
             } else {
                 item.hide();
             }

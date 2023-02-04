@@ -30,7 +30,8 @@ logging.basicConfig(filename=f'rthserve-{security_token}.log',
                     format='%(asctime)s - %(levelname)s - %(threadName)s - %(name)s - %(message)s')
 
 
-def check_token(token: str):
+async def check_token(token: str):
+    await asyncio.sleep(1)
     if token != security_token:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED)
     return token
@@ -50,7 +51,6 @@ def read_items(token: str = Depends(check_token)):
 async def read_items(category_short: str, item_name: str, operation: str, token: str = Depends(check_token)):
     if operation not in ('check', 'uncheck'):
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
-    await asyncio.sleep(1)
     item = state.items.get_item(category_short, item_name)
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
@@ -62,9 +62,14 @@ async def read_items(category_short: str, item_name: str, operation: str, token:
     return item
 
 
+@app.get('/{token}', response_class=HTMLResponse)
+async def index_without_index_html(token: str = Depends(check_token)):
+    return RedirectResponse(f'/s/{token}/index.html')
+
+
 @app.get('/s/{token}', response_class=HTMLResponse)
 async def index_without_index_html(token: str = Depends(check_token)):
-    return RedirectResponse(f'/{token}/index.html')
+    return RedirectResponse(f'/s/{token}/index.html')
 
 
 @app.get('/s/{token}/index.html', response_class=HTMLResponse)
