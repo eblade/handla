@@ -1,0 +1,58 @@
+<html>
+<head>
+    <title>Redigera {{ item['name'] }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <style>
+    {% include 'styles.css' %}
+    </style>
+</head>
+<body>
+    <h1>{{ item['name'] }}</h1>
+    <form method="get" action="../../index.html">
+        <div>
+            <h2>Name</h2>
+            <input
+                type="hidden"
+                name="old_name"
+                value="{{ item['name'] }}" />
+            <input
+                type="text"
+                class="input-text"
+                name="new_name"
+                value="{{ item['name'] }}" />
+        </div>
+        <div>
+            <h2>Category</h2>
+            <input
+                type="hidden"
+                name="old_category"
+                value="{{ item['category']['short'] }}" />
+            <select
+                type="text"
+                class="input-select"
+                name="new_category">
+                {% for category in categories %}
+                <option value="{{ category['short'] }}" {{ "selected" if category['short'] == item['category']['short'] }}>{{ category['name'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <h2>Comment</h2>
+            <input
+                type="hidden"
+                name="old_comment"
+                value="{{ item['comment'] or '' }}" />
+            <input
+                type="text"
+                class="input-text"
+                name="new_comment"
+                value="{{ item['comment'] or '' }}" />
+        </div>
+        <h2></h2>
+        <input type="submit" value="Uppdatera" />
+    </div>
+    </form>
+    <a class="menu" href="../../index.html">Avbryt</a>
+</body>
+</html>
+

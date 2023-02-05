@@ -28,6 +28,9 @@ class Categories:
             self._make_index()
         return key in self._index
 
+    def __iter__(self):
+        return iter(self.categories)
+
     @classmethod
     def load_from_file(cls, path):
         self = cls()
