@@ -108,7 +108,7 @@ function reload_items() {
         if (this.status == 200) {
             let json = JSON.parse(this.response);
             Object.values(json.categories).forEach(cat => {
-                itemsContainer.innerHTML += `<h2>${cat.name}</h2><div id="cat_${cat.short}"></div>`
+                itemsContainer.innerHTML += `<h2 id="lcat_${cat.short}">${cat.name}</h2><div id="cat_${cat.short}"></div>`
                 catContainer = document.getElementById(`cat_${cat.short}`);
                 Object.values(cat.items).forEach(itm => {
                     catContainer.innerHTML += `<x-item label="${itm.name}" comment="${itm.comment}" state="${itm.state}" category="${cat.short}" synced="1"></x-item>`;
@@ -128,6 +128,8 @@ function filter_changed() {
     let update = document.getElementById("button-update");
     let stopSearch = document.getElementById("button-stop-search");
     let add = document.getElementById("button-add");
+    let categories = document.getElementsByTagName("h2");
+    let categoryList = Array.prototype.slice.call(categories);
 
     if (filter) {
         update.style.display = "none";
@@ -139,19 +141,31 @@ function filter_changed() {
         add.style.display = "none";
     }
 
+    let usedCategories = new Set();
+
     itemList.forEach(item => {
         if (filter) {
             if (item.label.toUpperCase().indexOf(filter) > -1) {
                 item.show_for_add();
+                usedCategories.add(`lcat_${item.category}`);
             } else {
                 item.hide();
             }
         } else {
             if (item.is_unchecked()) {
                 item.show();
+                usedCategories.add(`lcat_${item.category}`);
             } else {
                 item.hide();
             }
+        }
+    });
+
+    categoryList.forEach(label => {
+        if (usedCategories.has(label.id)) {
+            label.style.display = "";
+        } else {
+            label.style.display = "none";
         }
     });
 }

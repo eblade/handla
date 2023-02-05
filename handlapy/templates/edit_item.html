@@ -10,7 +10,7 @@
     {% if new %}
     <h1>Lägg till ny sak</h1>
     {% else %}
-    <h1>{{ item['name'] }}</h1>
+    <h1>Ändra</h1>
     {% endif %}
     <form method="get" action="../../index.html">
         <input
@@ -18,7 +18,7 @@
             name="is_new"
             value="{{ "yes" if new else "no" }}" />
         <div>
-            <h2>Name</h2>
+            <h2>Namn</h2>
             <input
                 type="hidden"
                 name="old_name"
@@ -27,10 +27,12 @@
                 type="text"
                 class="input-text"
                 name="new_name"
-                value="{{ item['name'] }}" />
+                value="{{ item['name'] }}"
+                autocorrect="off"
+                autocapitalize="off" />
         </div>
         <div>
-            <h2>Category</h2>
+            <h2>Kategori</h2>
             <input
                 type="hidden"
                 name="old_category"
@@ -45,7 +47,7 @@
             </select>
         </div>
         <div>
-            <h2>Comment</h2>
+            <h2>Kommentar</h2>
             <input
                 type="hidden"
                 name="old_comment"
@@ -56,11 +58,24 @@
                 name="new_comment"
                 value="{{ item['comment'] or '' }}" />
         </div>
-        <h2></h2>
-        <input type="submit" value="Färdig" />
+        <div class="buttons">
+            <input type="submit"
+                   value="Färdig"
+                   class="button" />
+            <input type="button"
+                   style="background-color: #444"
+                   value="Avbryt"
+                   class="button"
+                   onclick="window.location = '../../index.html';" />
+            <input type="button"
+                   style="background-color: #844"
+                   value="Ta bort"
+                   class="button"
+                   onclick="window.location = '../../delete-itm/{{ item['category']['short'] }}/{{ item['name'] }}';" />
+        </div>
+        <div class="finstilt">Om du tar bort den går det inte att få tillbaka den</div>
     </div>
     </form>
-    <a class="menu" href="../../index.html">Avbryt</a>
 </body>
 </html>
 

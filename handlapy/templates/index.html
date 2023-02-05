@@ -9,11 +9,11 @@
 <body>
     <h1>Listan</h1>
     <div class="buttons">
-        <input type="button" value="Uppdatera" id="button-update" />
-        <input type="button" value="Sluta sök" id="button-stop-search" />
-        <input type="button" value="Lägg till" id="button-add" />
+        <input type="button" value="Uppdatera" id="button-update" class="button" />
+        <input type="button" value="Sluta sök" id="button-stop-search" class="button" />
+        <input type="button" value="Lägg till" id="button-add" class="button" />
     </div>
-    <input id="search" autofocus onkeyup="filter_changed()" placeholder="Filtrera/lägg till" />
+    <input id="search" autofocus onkeyup="filter_changed()" placeholder="Filtrera/lägg till" autocorrect="off" autocapitalize="off" />
     <div id="items">
     </div>
 

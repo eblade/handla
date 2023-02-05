@@ -28,11 +28,16 @@ h2 {
     padding: 3pt;
 }
 
-input[type=submit] {
-    margin-top: 1em;
-    padding: 8pt;
+.button {
+    background-color: green;
+    border: none;
+    color: white;
+    padding: 10pt 20pt;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
     font-size: 16pt;
-    margin-left: 8pt;
+    margin- 4pt 2pt;
 }
 
 input#search {
@@ -48,15 +53,15 @@ div.buttons {
     padding: 2pt;
 }
 
-input[type=button] {
-    height: 24pt;
-}
-
 input[type=text].input-text {
     padding: 8pt;
     font-size: 16pt;
     width: 100%;
     border: 0;
+}
+
+.cancel {
+    background-color: #666;
 }
 
 select.input-select {
@@ -65,4 +70,10 @@ select.input-select {
     width: 100%;
     border: 0;
     background-color: white;
+}
+
+div.finstilt {
+    padding: 2pt;
+    font-style: italic;
+    color: #222;
 }
