@@ -163,4 +163,4 @@ def error_page(request: Request, exc: HTTPException):
     return templates.TemplateResponse('error.html', {
         'request': request,
         'exc': exc,
-    })
+    }, status_code=exc.status_code)
