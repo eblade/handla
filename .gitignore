@@ -20,3 +20,8 @@ tags
 
 # Python
 __pycache__
+venv
+
+# Other
+token
+*.log
