@@ -13,6 +13,10 @@ h1 {
     margin-bottom: 0pt;
 }
 
+h1.error {
+    background-color: #822;
+}
+
 h2 {
     background-color: gray;
     color: white;
@@ -76,4 +80,8 @@ div.finstilt {
     padding: 2pt;
     font-style: italic;
     color: #222;
+}
+
+div.error-line {
+    padding: 2pt;
 }

@@ -61,18 +61,18 @@ async def read_items(category_short: str,
                      comment: Optional[str] = Query(None),
                      token: str = Depends(check_token)):
     if operation not in ('check', 'uncheck', 'add'):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Invalid operation: {operation}')
     if operation == 'add':
         category = state.categories[category_short]
         if category is None:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST)
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Category not found: {category_short}')
         item = Item(item_name, category, ItemState.unchecked)
         state.items.add_item(item)
         return item
 
     item = state.items.get_item(category_short, item_name)
     if item is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'Item {category_short}/{item_name} does not exist')
     if operation == 'check':
         item.check()
     elif operation == 'uncheck':
@@ -87,7 +87,7 @@ async def read_items(category_short: str,
 async def edit_item(request: Request, category_short: str, item_name: str, token: str = Depends(check_token)):
     item = state.items.get_item(category_short, item_name)
     if item is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'Item {category_short}/{item_name} does not exist')
     return templates.TemplateResponse('edit_item.html', {
         'request': request,
         'new': False,
@@ -135,13 +135,16 @@ async def index_html(request: Request,
         if is_new == 'yes':
             category = state.categories[new_category]
             if category is None:
-                raise HTTPException(status.HTTP_400_BAD_REQUEST)
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Category not found: {category_short}')
             item = Item(new_name, category, ItemState.unchecked)
-            state.items.add_item(item)
+            try:
+                state.items.add_item(item)
+            except KeyError as e:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(e))
         else:
             item = state.items.get_item(old_category, old_name)
             if item is None:
-                raise HTTPException(status.HTTP_404_NOT_FOUND)
+                raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'Item {category_short}/{item_name} does not exist')
         new_name = new_name.strip()
         new_comment = new_comment.strip()
         item.name = new_name
@@ -152,4 +155,12 @@ async def index_html(request: Request,
     return templates.TemplateResponse('index.html', {
         'request': request,
         'token': token
+    })
+
+
+@app.exception_handler(HTTPException)
+def error_page(request: Request, exc: HTTPException):
+    return templates.TemplateResponse('error.html', {
+        'request': request,
+        'exc': exc,
     })

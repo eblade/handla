@@ -1,0 +1,30 @@
+<html>
+<head>
+    <title>Error</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <style>
+    {% include 'styles.css' %}
+    </style>
+</head>
+<body>
+    <h1 class="error">Error</h1>
+    <h2>Status Code</h2>
+    <div class="error-line">
+        {{ exc }}
+    </div>
+    <h2>Message</h2>
+    <div class="error-line">
+        {{ exc.detail }}
+    </div>
+    <div class="buttons">
+        <input type="button"
+               style="background-color: #444"
+               value="Tillbaka"
+               class="button"
+               onclick="window.history.back()" />
+    </div>
+    <div class="finstilt">Säg till Johan, det ska inte bli såhär.</div>
+    </form>
+</body>
+</html>
+
