@@ -33,7 +33,7 @@ logging.basicConfig(filename=f'handla-{security_token}.log',
 
 
 async def check_token(token: str):
-    await asyncio.sleep(1)
+    #await asyncio.sleep(1)
     if token != security_token:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED)
     return token
@@ -55,7 +55,11 @@ def read_items(token: str = Depends(check_token)):
 
 
 @app.put('/s/{token}/itm/{category_short}/{item_name}/{operation}')
-async def read_items(category_short: str, item_name: str, operation: str, token: str = Depends(check_token)):
+async def read_items(category_short: str,
+                     item_name: str,
+                     operation: str,
+                     comment: Optional[str] = Query(None),
+                     token: str = Depends(check_token)):
     if operation not in ('check', 'uncheck'):
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
     item = state.items.get_item(category_short, item_name)
@@ -65,6 +69,8 @@ async def read_items(category_short: str, item_name: str, operation: str, token:
         item.check()
     elif operation == 'uncheck':
         item.uncheck()
+    if comment is not None:
+        item.set_comment(comment)
     print(item)
     return item
 
@@ -101,7 +107,7 @@ async def index_html(request: Request,
                      new_comment: Optional[str] = Query(None),
                      token: str = Depends(check_token)):
 
-    if old_name != '' and old_category != '':
+    if old_name and old_category:
         print(old_category, old_name)
         item = state.items.get_item(old_category, old_name)
         if item is None:
@@ -110,7 +116,8 @@ async def index_html(request: Request,
         new_comment = new_comment.strip()
         item.name = new_name
         item.category = categories[new_category]
-        item.comment = new_comment or None
+        item.set_comment(new_comment)
+        return RedirectResponse(f'/s/{token}/index.html')
 
     return templates.TemplateResponse('index.html', {
         'request': request,

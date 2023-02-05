@@ -32,8 +32,11 @@ class Item:
     def uncheck(self):
         self.state = ItemState.unchecked
 
-    def comment(self, comment):
-        self.comment = comment
+    def set_comment(self, comment):
+        if not comment:
+            self.uncomment()
+        else:
+            self.comment = comment
     
     def uncomment(self):
         self.comment = None

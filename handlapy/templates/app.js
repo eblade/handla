@@ -42,9 +42,11 @@ class Item extends HTMLElement {
         if (this.state == 1) {
             label.style.textDecoration = "line-through";
             label.style.color = "#888";
+            comment.style.color = "#888";
         } else {
             label.style.textDecoration = "none";
             label.style.color = "#222";
+            comment.style.color = "#000";
         }
         if (this.synced == 1) {
             container.classList.remove("processing");
@@ -70,9 +72,9 @@ class Item extends HTMLElement {
 
         let self = this;
         label.addEventListener('click', e => {
-            let op = "uncheck";
+            let op = `uncheck?comment=${encodeURIComponent(this.comment)}`;
             if (this.is_unchecked()) {
-                op = "check";
+                op = `check?comment=`;
                 self.state = 1;
             } else {
                 self.state = 0;
