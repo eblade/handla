@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from handlapy.state import State
 from handlapy.category import Categories
-from handlapy.item import ItemList
+from handlapy.item import ItemList, Item, ItemState
 
 
 app = FastAPI()
@@ -60,8 +60,16 @@ async def read_items(category_short: str,
                      operation: str,
                      comment: Optional[str] = Query(None),
                      token: str = Depends(check_token)):
-    if operation not in ('check', 'uncheck'):
+    if operation not in ('check', 'uncheck', 'add'):
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
+    if operation == 'add':
+        category = state.categories[category_short]
+        if category_short is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        item = Item(item_name, category, ItemState.unchecked)
+        state.items.add_item(item)
+        return item
+
     item = state.items.get_item(category_short, item_name)
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND)

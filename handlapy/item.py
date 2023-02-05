@@ -20,6 +20,9 @@ class Item:
         comment = f' ({self.comment})' if self.comment else ''
         return f'[{x}] {self.category.short}/{self.name}{comment}'
 
+    def __eq__(self, other):
+        return self.category.short == other.category.short and self.name == other.name
+
     def rename(self, name):
         self.name = name
 
@@ -91,3 +94,10 @@ class ItemList:
 
     def get_item(self, category_short, item_name):
         return next((item for item in self.items if item.category.short == category_short and item.name == item_name), None)
+
+    def add_item(self, item: Item):
+        for existing_item in self.items:
+            if item == existing_item:
+                raise KeyError(f'Item {item} already exists')
+        self.items.append(item)
+

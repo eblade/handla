@@ -44,6 +44,36 @@
             <a id="edit">[ÄNDRA]</a>
         </div>
     </template>
+    <template id="category-template">
+<style>
+#container {
+    background-color: gray;
+    margin-top: 0pt;
+    margin-bottom: 0pt;
+    border-bottom: 1px solid #aaa;
+}
+
+#label {
+    color: white;
+    padding: 1pt;
+    margin-top: 0pt;
+    font-size: 8pt;
+    text-transform: uppercase;
+}
+
+#add {
+    font-size: 16pt;
+    padding-left: 3pt;
+    padding-right: 3pt;
+    color: #242;
+    cursor: pointer;
+}
+</style>
+        <div id="container">
+            <span id="label"></span>
+            <span id="add">+ lägg till här</span>
+        </div>
+    </template>
 
     <script>
     {% include 'app.js' %}

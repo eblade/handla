@@ -95,7 +95,60 @@ class Item extends HTMLElement {
     }
 }
 
+class Category extends HTMLElement {
+    get label() { return this.getAttribute('label'); }
+    set label(val) { this.setAttribute('label', val); this.update(); }
+    get cat() { return this.getAttribute('cat'); }
+    set cat(val) { this.setAttribute('cat', val); this.update(); }
+    get add() { return this.getAttribute('add'); }
+    set add(val) { this.setAttribute('add', parseInt(val)); this.update(); }
+
+    show_add() { this.add = "1"; }
+    hide_add() { this.add = "0"; }
+
+    constructor() { super(); }
+
+    update() {
+        let label = this.shadowRoot.getElementById('label');
+        label.innerText = this.label;
+        let add = this.shadowRoot.getElementById('add');
+        if (this.add == 1) {
+            add.style.display = '';
+        } else {
+            add.style.display = 'none';
+        }
+
+    }
+
+    connectedCallback() {
+        let tmpl = document.getElementById('category-template');
+        let shadowRoot = this.attachShadow({mode: 'open'});
+        let clone = tmpl.content.cloneNode(true);
+        shadowRoot.appendChild(clone);
+        let label = shadowRoot.getElementById('label');
+        label.innerText = this.label;
+        let add = shadowRoot.getElementById('add');
+        add.style.display = 'none';
+        
+        let self = this;
+        add.addEventListener('click', e => {
+            let input = document.getElementById("search");
+            let name = input.value;
+            let req = new XMLHttpRequest();
+            req.open('PUT', `itm/${self.cat}/${name}/add`, true);
+            req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            req.onload = function() {
+                if (this.status == 200) {
+                    window.location = `edit-itm/${self.cat}/${name}`;
+                }
+            };
+            req.send();
+        });
+    }
+}
+
 window.customElements.define('x-item', Item);
+window.customElements.define('x-category', Category);
 
 function reload_items() {
     let itemsContainer = document.getElementById('items');
@@ -108,10 +161,10 @@ function reload_items() {
         if (this.status == 200) {
             let json = JSON.parse(this.response);
             Object.values(json.categories).forEach(cat => {
-                itemsContainer.innerHTML += `<h2>${cat.name}</h2><div id="cat_${cat.short}"></div>`
+                itemsContainer.innerHTML += `<x-category label="${cat.name}" add="0" cat="${cat.short}"></x-category><div id="cat_${cat.short}"></div>`
                 catContainer = document.getElementById(`cat_${cat.short}`);
                 Object.values(cat.items).forEach(itm => {
-                    catContainer.innerHTML += `<x-item label="${itm.name}" comment="${itm.comment}" state="${itm.state}" category="${cat.short}" synced="1" />`;
+                    catContainer.innerHTML += `<x-item label="${itm.name}" comment="${itm.comment}" state="${itm.state}" category="${cat.short}" synced="1"></x-item>`;
                 });
             });
         filter_changed();
@@ -125,6 +178,16 @@ function filter_changed() {
     let filter = input.value.toUpperCase();
     let items = document.getElementsByTagName("x-item");
     let itemList = Array.prototype.slice.call(items);
+    let categories = document.getElementsByTagName("x-category");
+    let categoryList = Array.prototype.slice.call(categories);
+
+    categoryList.forEach(category => {
+        if (filter) {
+            category.show_add();
+        } else {
+            category.hide_add();
+        }
+    });
 
     itemList.forEach(item => {
         if (filter) {
