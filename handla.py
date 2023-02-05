@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 from handlapy.state import State
 from handlapy.category import Categories
 from handlapy.item import ItemList, Item, ItemState
+from handlapy.db import Database
 
 
 app = FastAPI()
@@ -17,9 +18,11 @@ app.mount('/static/', StaticFiles(directory='handlapy/static'), name='static')
 templates = Jinja2Templates(directory='handlapy/templates')
 
 
+db = Database('handla.db')
 categories = Categories.load_from_file('handlapy/data/categories')
-state = State(categories, ItemList.load_from_file('handlapy/data/things', categories))
-state.items.get_item('ö', 'russin').uncheck()
+state = State(categories, ItemList.with_db(db, categories))
+russin = Item('russin', categories['ö'], ItemState.unchecked)
+state.items.add_item(russin)
 
 
 with open('token', 'r') as tp:
@@ -68,7 +71,7 @@ async def read_items(category_short: str,
             raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Category not found: {category_short}')
         item = Item(item_name, category, ItemState.unchecked)
         state.items.add_item(item)
-        return item
+        return item.dict()
 
     item = state.items.get_item(category_short, item_name)
     if item is None:
@@ -79,8 +82,7 @@ async def read_items(category_short: str,
         item.uncheck()
     if comment is not None:
         item.set_comment(comment)
-    print(item)
-    return item
+    return item.dict()
 
 
 @app.get('/s/{token}/edit-itm/{category_short}/{item_name}')
@@ -92,20 +94,20 @@ async def edit_item(request: Request, category_short: str, item_name: str, token
         'request': request,
         'new': False,
         'token': token,
-        'item': item,
+        'item': item.dict(),
         'categories': state.categories,
     })
 
 
 @app.get('/s/{token}/new-itm/first/{item_name}')
-async def edit_item(request: Request, item_name: str, token: str = Depends(check_token)):
+async def new_item(request: Request, item_name: str, token: str = Depends(check_token)):
     category = state.categories.first()
     item = Item(item_name, category, ItemState.unchecked)
     return templates.TemplateResponse('edit_item.html', {
         'request': request,
         'new': True,
         'token': token,
-        'item': item,
+        'item': item.dict(),
         'categories': state.categories,
     })
 
@@ -164,3 +166,8 @@ def error_page(request: Request, exc: HTTPException):
         'request': request,
         'exc': exc,
     }, status_code=exc.status_code)
+
+
+@app.on_event('shutdown')
+def on_shutdown():
+    db.close()

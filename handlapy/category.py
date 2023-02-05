@@ -7,6 +7,13 @@ class Category:
     def __repr__(self):
         return f'[{self.short}] {self.name}'
 
+    def dict(self):
+        return dict(
+            name=self.name,
+            short=self.short,
+            ordinal=self.ordinal,
+        )
+
 
 class Categories:
     def __init__(self, categories: list[Category] = None):
@@ -33,7 +40,6 @@ class Categories:
 
     def first(self):
         return self.categories[0]
-
 
     @classmethod
     def load_from_file(cls, path):

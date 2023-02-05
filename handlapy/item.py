@@ -14,6 +14,15 @@ class Item:
         self.category = category
         self.state = state
         self.comment = comment
+        self._parent = None
+
+    def dict(self):
+        return dict(
+            name=self.name,
+            category=self.category.dict(),
+            state=self.state,
+            comment=self.comment,
+        )
 
     def __repr__(self):
         x = 'x' if self.state is ItemState.checked else ' '
@@ -23,26 +32,41 @@ class Item:
     def __eq__(self, other):
         return self.category.short == other.category.short and self.name == other.name
 
+    def connect(self, parent):
+        self._parent = parent
+
+    def _callback(self, old_name=None, old_category=None):
+        if self._parent is not None:
+            self._parent.callback(old_name or self.name, old_category or self.category.short, self)
+
     def rename(self, name):
+        old_name = self.name
         self.name = name
+        self._callback(old_name=old_name)
 
     def move(self, category):
+        old_category = self.category.short
         self.category = category
+        self._callback(old_category=old_category)
 
     def check(self):
         self.state = ItemState.checked
+        self._callback()
 
     def uncheck(self):
         self.state = ItemState.unchecked
+        self._callback()
 
     def set_comment(self, comment):
         if not comment:
             self.uncomment()
         else:
             self.comment = comment
+        self._callback()
     
     def uncomment(self):
         self.comment = None
+        self._callback()
 
     def is_checked(self):
         return self.state is ItemState.checked
@@ -52,8 +76,9 @@ class Item:
 
 
 class ItemList:
-    def __init__(self, items: list[Item] = None):
+    def __init__(self, items: list[Item] = None, db = None):
         self.items = items or []
+        self.db = db
 
     @classmethod
     def load_from_file(cls, path, categories: Categories):
@@ -76,8 +101,13 @@ class ItemList:
                 category = categories[category_short]
                 item = Item(name, category, ItemState.checked)
                 self.items.append(item)
+                item.connect(self)
                 keys.add((category_short, name))
         return self
+
+    @classmethod
+    def with_db(cls, db, categories: Categories):
+        return cls(None, db)
 
     def by_category(self):
         in_order = sorted((item for item in self.items), key=lambda x: (x.category.ordinal, x.name))
@@ -87,7 +117,7 @@ class ItemList:
                 {
                     'name': group[0].name,
                     'short': group[0].short,
-                    'items': [item for item in group[1]]
+                    'items': [item.dict() for item in group[1]]
                 } for group in grouped
             ]
         }
@@ -99,5 +129,12 @@ class ItemList:
         for existing_item in self.items:
             if item == existing_item:
                 raise KeyError(f'Item {item} already exists')
+        item.connect(self)
         self.items.append(item)
+        self.callback(item.name, item.category.short, item)
 
+    def callback(self, old_name: str, old_category: str, item: Item):
+        print('Callback', item)
+        if self.db is None:
+            return
+        self.db.upsert(old_name, old_category, item.name, item.category.short, item.state.value, item.comment)
