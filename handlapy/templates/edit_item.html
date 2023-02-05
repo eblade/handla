@@ -1,14 +1,22 @@
 <html>
 <head>
-    <title>Redigera {{ item['name'] }}</title>
+    <title>Sakfipplare</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <style>
     {% include 'styles.css' %}
     </style>
 </head>
 <body>
+    {% if new %}
+    <h1>Lägg till ny sak</h1>
+    {% else %}
     <h1>{{ item['name'] }}</h1>
+    {% endif %}
     <form method="get" action="../../index.html">
+        <input
+            type="hidden"
+            name="is_new"
+            value="{{ "yes" if new else "no" }}" />
         <div>
             <h2>Name</h2>
             <input
@@ -49,7 +57,7 @@
                 value="{{ item['comment'] or '' }}" />
         </div>
         <h2></h2>
-        <input type="submit" value="Uppdatera" />
+        <input type="submit" value="Färdig" />
     </div>
     </form>
     <a class="menu" href="../../index.html">Avbryt</a>

@@ -43,6 +43,15 @@ input#search {
     border: 0;
 }
 
+div.buttons {
+    background-color: gray;
+    padding: 2pt;
+}
+
+input[type=button] {
+    height: 24pt;
+}
+
 input[type=text].input-text {
     padding: 8pt;
     font-size: 16pt;

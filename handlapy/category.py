@@ -31,6 +31,10 @@ class Categories:
     def __iter__(self):
         return iter(self.categories)
 
+    def first(self):
+        return self.categories[0]
+
+
     @classmethod
     def load_from_file(cls, path):
         self = cls()

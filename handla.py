@@ -64,7 +64,7 @@ async def read_items(category_short: str,
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
     if operation == 'add':
         category = state.categories[category_short]
-        if category_short is None:
+        if category is None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST)
         item = Item(item_name, category, ItemState.unchecked)
         state.items.add_item(item)
@@ -90,6 +90,20 @@ async def edit_item(request: Request, category_short: str, item_name: str, token
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     return templates.TemplateResponse('edit_item.html', {
         'request': request,
+        'new': False,
+        'token': token,
+        'item': item,
+        'categories': state.categories,
+    })
+
+
+@app.get('/s/{token}/new-itm/first/{item_name}')
+async def edit_item(request: Request, item_name: str, token: str = Depends(check_token)):
+    category = state.categories.first()
+    item = Item(item_name, category, ItemState.unchecked)
+    return templates.TemplateResponse('edit_item.html', {
+        'request': request,
+        'new': True,
         'token': token,
         'item': item,
         'categories': state.categories,
@@ -108,6 +122,7 @@ async def index_without_index_html(token: str = Depends(check_token)):
 
 @app.get('/s/{token}/index.html', response_class=HTMLResponse)
 async def index_html(request: Request,
+                     is_new: Optional[str] = Query(None),
                      old_category: Optional[str] = Query(None),
                      new_category: Optional[str] = Query(None),
                      old_name: Optional[str] = Query(None),
@@ -116,10 +131,17 @@ async def index_html(request: Request,
                      token: str = Depends(check_token)):
 
     if old_name and old_category:
-        print(old_category, old_name)
-        item = state.items.get_item(old_category, old_name)
-        if item is None:
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
+        print(is_new, old_category, old_name)
+        if is_new == 'yes':
+            category = state.categories[new_category]
+            if category is None:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST)
+            item = Item(new_name, category, ItemState.unchecked)
+            state.items.add_item(item)
+        else:
+            item = state.items.get_item(old_category, old_name)
+            if item is None:
+                raise HTTPException(status.HTTP_404_NOT_FOUND)
         new_name = new_name.strip()
         new_comment = new_comment.strip()
         item.name = new_name
