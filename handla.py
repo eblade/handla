@@ -118,6 +118,15 @@ async def new_item(request: Request, item_name: str, token: str = Depends(check_
     })
 
 
+@app.get('/s/{token}/delete-itm/{category_short}/{item_name}')
+async def delete_item(request: Request, category_short: str, item_name: str, token: str = Depends(check_token)):
+    item = state.items.get_item(category_short, item_name)
+    if item is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'Item {category_short}/{item_name} does not exist')
+    state.items.delete_item(item)
+    return RedirectResponse(f'/s/{token}/index.html')
+
+
 @app.get('/{token}', response_class=HTMLResponse)
 async def index_legacy(token: str = Depends(check_token)):
     return RedirectResponse(f'/s/{token}/index.html')

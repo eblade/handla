@@ -147,8 +147,11 @@ class ItemList:
         self.items.append(item)
         self.callback(item.name, item.category.short, item)
 
+    def delete_item(self, item: Item):
+        self.items.remove(item)
+        self.db.delete(item.name, item.category.short)
+
     def callback(self, old_name: str, old_category: str, item: Item):
-        print('Callback', item)
         if self.db is None:
             return
         self.db.upsert(old_name, old_category, item.name, item.category.short, item.state.value, item.comment)

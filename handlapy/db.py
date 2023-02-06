@@ -42,3 +42,10 @@ class Database:
         params = (name, category, state, comment, old_name, old_category)
         res = cur.execute("UPDATE item SET name = ?, category = ?, state = ?, comment = ? WHERE name = ? AND category = ?", params)
 
+    def delete(self, name: str, category: str):
+        with closing(self.connect()) as con:
+            with closing(con.cursor()) as cur:
+                params = (name, category)
+                res = cur.execute("DELETE FROM item WHERE name = ? AND category = ?", params)
+            con.commit()
+
