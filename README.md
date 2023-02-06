@@ -22,7 +22,7 @@ echo hemligt_token > token
 uvicorn handla:app
 ```
 
-Sen kan man kopiera `mat.service`, ändra lite sökvägar efter behag, köra de selinux-kommandon somfinns där och lägga den i `/etc/systemd/system/`. Sen kör man som `root`:
+Sen kan man kopiera `mat.service`, ändra lite sökvägar efter behag, köra de selinux-kommandon som finns där och lägga den i `/etc/systemd/system/`. Sen kör man som `root`:
 
 ```bash
 systemctl enable mat
