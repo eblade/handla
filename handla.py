@@ -21,8 +21,8 @@ templates = Jinja2Templates(directory='handlapy/templates')
 db = Database('handla.db')
 categories = Categories.load_from_file('handlapy/data/categories')
 state = State(categories, ItemList.with_db(db, categories))
-russin = Item('russin', categories['ö'], ItemState.unchecked)
-state.items.add_item(russin)
+#russin = Item('russin', categories['ö'], ItemState.unchecked)
+#state.items.add_item(russin)
 
 
 with open('token', 'r') as tp:
@@ -45,6 +45,12 @@ async def check_token(token: str):
 @app.get('/favicon.ico', include_in_schema=False)
 async def favicon(request: Request):
     return FileResponse('handlapy/static/favicon.ico')
+
+
+@app.get('/s/{token}/bootstrap')
+def bootstrap(token: str = Depends(check_token)):
+    state.items.load_from_file('handlapy/data/things', state.categories)
+    return state.items.by_category()
 
 
 @app.get('/s/{token}/cat')
@@ -170,4 +176,5 @@ def error_page(request: Request, exc: HTTPException):
 
 @app.on_event('shutdown')
 def on_shutdown():
-    db.close()
+    #db.close()
+    pass

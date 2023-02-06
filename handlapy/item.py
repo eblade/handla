@@ -24,6 +24,12 @@ class Item:
             comment=self.comment,
         )
 
+    @classmethod
+    def from_db(self, categories: Categories, name: str, category_short: str, state_value: int, comment: str):
+        category = categories[category_short]
+        state = ItemState.checked if state_value == 1 else ItemState.unchecked
+        return Item(name, category, state, comment)
+
     def __repr__(self):
         x = 'x' if self.state is ItemState.checked else ' '
         comment = f' ({self.comment})' if self.comment else ''
@@ -42,18 +48,24 @@ class Item:
     def rename(self, name):
         old_name = self.name
         self.name = name
-        self._callback(old_name=old_name)
+        if old_name != name:
+            self._callback(old_name=old_name)
 
     def move(self, category):
         old_category = self.category.short
         self.category = category
-        self._callback(old_category=old_category)
+        if old_category != category.short:
+            self._callback(old_category=old_category)
 
     def check(self):
+        if self.state is ItemState.checked:
+            return
         self.state = ItemState.checked
         self._callback()
 
     def uncheck(self):
+        if self.state is ItemState.unchecked:
+            return
         self.state = ItemState.unchecked
         self._callback()
 
@@ -61,10 +73,14 @@ class Item:
         if not comment:
             self.uncomment()
         else:
+            if self.comment == comment:
+                return
             self.comment = comment
-        self._callback()
+            self._callback()
     
     def uncomment(self):
+        if self.comment is None:
+            return
         self.comment = None
         self._callback()
 
@@ -77,12 +93,12 @@ class Item:
 
 class ItemList:
     def __init__(self, items: list[Item] = None, db = None):
-        self.items = items or []
+        self.items = list(items) or []
+        for item in self.items:
+            item.connect(self)
         self.db = db
 
-    @classmethod
-    def load_from_file(cls, path, categories: Categories):
-        self = cls()
+    def load_from_file(self, path, categories: Categories):
         keys = set()
         with open(path, 'r') as f:
             for line in f.readlines():
@@ -100,14 +116,12 @@ class ItemList:
                     raise KeyError(f'Duplicate name: {category_short}/{name}')
                 category = categories[category_short]
                 item = Item(name, category, ItemState.checked)
-                self.items.append(item)
-                item.connect(self)
+                self.add_item(item)
                 keys.add((category_short, name))
-        return self
 
     @classmethod
     def with_db(cls, db, categories: Categories):
-        return cls(None, db)
+        return cls(db.select(lambda *data: Item.from_db(categories, *data)), db)
 
     def by_category(self):
         in_order = sorted((item for item in self.items), key=lambda x: (x.category.ordinal, x.name))
