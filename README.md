@@ -36,10 +36,10 @@ Notera att appen förväntar sig att arbetskatalogen är samma som utcheckningen
 
 Om det ser ut att funka, kasta in `nginx`-configen från service-filen vet ja. Set upp letsencrypt med certbot och peka om din domän. Sen besöker du bara först `https://example.com/s/hemligt_token/bootstrap` för att lägga in lite startdata och sen `https://example.com/s/hemligt_token/index.html` för att komma till själva appen.
 
-## Kan man köra den i docker
+## Kan man köra den i docker?
 
 Säkert.
 
 ## Var lagras datan?
 
-I en sqlite3-database i `handla.db`.
+I en blockkedja med AI. Nej :) i en sqlite3-database i filen `handla.db`.
