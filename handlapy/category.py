@@ -1,3 +1,6 @@
+from typing import List
+
+
 class Category:
     def __init__(self, name: str, short: str, ordinal: int):
         self.name = name
@@ -16,7 +19,7 @@ class Category:
 
 
 class Categories:
-    def __init__(self, categories: list[Category] = None):
+    def __init__(self, categories: List[Category] = None):
         self.categories = categories or []
         self._indexed = False
         self._index = {}

@@ -1,6 +1,7 @@
 from enum import Enum
 from .category import Category, Categories
 from itertools import groupby
+from typing import List
 
 
 class ItemState(Enum):
@@ -77,7 +78,7 @@ class Item:
                 return
             self.comment = comment
             self._callback()
-    
+
     def uncomment(self):
         if self.comment is None:
             return
@@ -92,7 +93,7 @@ class Item:
 
 
 class ItemList:
-    def __init__(self, items: list[Item] = None, db = None):
+    def __init__(self, items: List[Item] = None, db = None):
         self.items = list(items) or []
         for item in self.items:
             item.connect(self)
