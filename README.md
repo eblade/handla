@@ -4,8 +4,16 @@ Familjens handlingslista. Mjukvara på svenska.
 
 ## Krav
 
+För bakändan:
+
 - Python 3.6 eller senare
-- requirements.txt
+- requirements.txt (fastapi, jinja2 och uvicorn[standard])
+
+För webb-delen:
+
+- JavaScript, HTML och CSS
+- Testade browsers: Firefox (desktop/android), Chrome (android), Badwolf, Qutebrowser, Edge
+- npm och veckans ramverk? Nope, behövs inte.
 
 ## Installation med venv, nginx och systemd
 
