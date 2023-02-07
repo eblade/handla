@@ -2,6 +2,11 @@
 
 Familjens handlingslista. Mjukvara på svenska.
 
+![image](https://user-images.githubusercontent.com/840259/217183341-97484a2a-a0a6-4a50-be54-a988aa7e504b.png)
+![image](https://user-images.githubusercontent.com/840259/217183465-cbaffc5f-5579-4683-8e8f-4032b8d9c14c.png)
+![image](https://user-images.githubusercontent.com/840259/217183594-bd83cd09-67e4-420e-aa28-ab9df04bc66a.png)
+
+
 ## Krav
 
 För bakändan:
@@ -50,4 +55,4 @@ Säkert.
 
 ## Var lagras datan?
 
-I en blockkedja med AI. Nej :) i en sqlite3-database i filen `handla.db`.
+I en blockkedja med AI. Nej :) i en sqlite3-databas i filen `handla.db`.
