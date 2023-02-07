@@ -36,12 +36,12 @@ h2 {
     background-color: green;
     border: none;
     color: white;
-    padding: 10pt 20pt;
+    padding: 10pt 15pt;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 16pt;
-    margin- 4pt 2pt;
+    margin: 4pt 2pt;
 }
 
 input#search {

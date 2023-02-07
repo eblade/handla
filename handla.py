@@ -47,6 +47,11 @@ async def favicon(request: Request):
     return FileResponse('handlapy/static/favicon.ico')
 
 
+@app.get('/')
+def root():
+    raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Det finns inget att se här.")
+
+
 @app.get('/s/{token}/bootstrap')
 def bootstrap(token: str = Depends(check_token)):
     state.items.load_from_file('handlapy/data/things', state.categories)
@@ -70,18 +75,18 @@ async def read_items(category_short: str,
                      comment: Optional[str] = Query(None),
                      token: str = Depends(check_token)):
     if operation not in ('check', 'uncheck', 'add'):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Invalid operation: {operation}')
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Vet inte hur man gör detta: {operation}')
     if operation == 'add':
         category = state.categories[category_short]
         if category is None:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Category not found: {category_short}')
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'adet finns ingen sån här kategori: {category_short}')
         item = Item(item_name, category, ItemState.unchecked)
         state.items.add_item(item)
         return item.dict()
 
     item = state.items.get_item(category_short, item_name)
     if item is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'Item {category_short}/{item_name} does not exist')
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'{category_short}/{item_name} finns inte')
     if operation == 'check':
         item.check()
     elif operation == 'uncheck':
@@ -95,7 +100,7 @@ async def read_items(category_short: str,
 async def edit_item(request: Request, category_short: str, item_name: str, token: str = Depends(check_token)):
     item = state.items.get_item(category_short, item_name)
     if item is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'Item {category_short}/{item_name} does not exist')
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'{category_short}/{item_name} finns inte')
     return templates.TemplateResponse('edit_item.html', {
         'request': request,
         'new': False,
@@ -122,7 +127,7 @@ async def new_item(request: Request, item_name: str, token: str = Depends(check_
 async def delete_item(request: Request, category_short: str, item_name: str, token: str = Depends(check_token)):
     item = state.items.get_item(category_short, item_name)
     if item is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'Item {category_short}/{item_name} does not exist')
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'{category_short}/{item_name} finns inte')
     state.items.delete_item(item)
     return RedirectResponse(f'/s/{token}/index.html')
 
@@ -152,7 +157,7 @@ async def index_html(request: Request,
         if is_new == 'yes':
             category = state.categories[new_category]
             if category is None:
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Category not found: {category_short}')
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f'Det finns ingen sån här kategori: {category_short}')
             item = Item(new_name, category, ItemState.unchecked)
             try:
                 state.items.add_item(item)
@@ -161,7 +166,7 @@ async def index_html(request: Request,
         else:
             item = state.items.get_item(old_category, old_name)
             if item is None:
-                raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'Item {category_short}/{item_name} does not exist')
+                raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'{category_short}/{item_name} finns inte')
         new_name = new_name.strip()
         new_comment = new_comment.strip()
         item.name = new_name
