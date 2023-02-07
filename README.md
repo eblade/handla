@@ -7,6 +7,15 @@ Familjens handlingslista. Mjukvara på svenska.
 ![image](https://user-images.githubusercontent.com/840259/217183594-bd83cd09-67e4-420e-aa28-ab9df04bc66a.png)
 
 
+## Finesser
+
+* Kategoriserade varor, sortering efter hur de kategorierna ligger på vår närmaste Willy's
+* Lagga till/ta bort/flytta varor
+* Supersäkert med hjälp av hemligt token i url:en
+* Man kan tillfälligt kommentera varor
+* Ångra att bocka av en vara
+* Sök bland varor
+
 ## Krav
 
 För bakändan:
@@ -56,3 +65,5 @@ Säkert.
 ## Var lagras datan?
 
 I en blockkedja med AI. Nej :) i en sqlite3-databas i filen `handla.db`.
+
+Om du vill backa upp kan du säkerhetskopiera den filen, eller göra `GET` på `/s/hemligt_token/itm-by-cat` och spara undan den fina JSON-filen du får då. Det finns i nuläget inget sätt att restaurera den så det är väl som backupper mest är antar jag.
