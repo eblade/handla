@@ -44,6 +44,10 @@ h2 {
     margin: 4pt 2pt;
 }
 
+.right {
+    float: right;
+}
+
 input#search {
     width: 100%;
     margin 0pt;
