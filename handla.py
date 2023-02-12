@@ -177,13 +177,13 @@ async def index_html(request: Request,
                 raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(e))
         else:
             item = await state.items.get_item(old_category, old_name)
-            prev = item
+            prev = item.copy()
             if item is None:
                 raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'{category_short}/{item_name} finns inte')
         new_name = new_name.strip()
         new_comment = new_comment.strip()
-        item.name = new_name
-        item.category = categories[new_category]
+        item.rename(new_name)
+        item.move(categories[new_category])
         item.set_comment(new_comment)
         await webman.send(dict(old=prev.dict() if prev else None, new=item.dict()))
         return RedirectResponse(f'/s/{token}/index.html')

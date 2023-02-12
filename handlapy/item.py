@@ -27,6 +27,9 @@ class Item:
             comment=self.comment,
         )
 
+    def copy(self):
+        return Item(self.name, self.category, self.state, self.comment)
+
     @classmethod
     def from_db(self, categories: Categories, name: str, category_short: str, state_value: int, comment: str):
         category = categories[category_short]

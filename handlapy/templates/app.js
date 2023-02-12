@@ -1,5 +1,9 @@
 function getItemId(category, name) { return `${category}-${name}`; }
 
+const UNCHECKED = 0;
+const ARCHIVED = 1;
+const CHECKED = 2;
+
 var categories = Object();
 var states = Object();
 var syncs = Object();
@@ -7,7 +11,7 @@ var labels = Object();
 
 function isVisible(itemId) {
     let state = states[itemId];
-    return state === 0 || state === 2;
+    return state === UNCHECKED || state === CHECKED;
 }
 
 function hide(itemId) {
@@ -21,7 +25,7 @@ function show(itemId) {
     let label = document.getElementById(`${itemId}-label`);
     item.style.display = "";
     let state = states[itemId];
-    if (state === 0) {
+    if (state === UNCHECKED) {
         label.style.color = "#222";
         label.style.textDecoration = "none";
     } else {
@@ -37,7 +41,7 @@ function showForAdd() {
     let label = document.getElementById(`${itemId}-label`);
     label.style.textDecoration = "none";
     let state = states[itemId];
-    if (state == 1 || state == 2) {
+    if (state == ARCHIVED || state == CHECKED) {
         label.innerText = "+ " + this.label;
         label.style.color = "#282";
     } else {
@@ -61,11 +65,11 @@ function setState(itemId, state) {
     states[itemId] = state;
     let label = document.getElementById(`${itemId}-label`);
     let comment = document.getElementById(`${itemId}-comment`);
-    if (state == 1) {  // archived
+    if (state == ARCHIVED) {
         label.style.textDecoration = "line-through";
         label.style.color = "#888";
         comment.style.color = "#888";
-    } else if (state == 2) {  // checked
+    } else if (state == CHECKED) {
         label.style.textDecoration = "line-through";
         label.style.color = "#888";
         comment.style.color = "#888";
@@ -93,7 +97,7 @@ function addClickHandler(itemId) {
         let state = states[itemId];
         let category = categories[itemId];
         let op = `uncheck`;
-        if (state == 0) {
+        if (state == UNCHECKED) {
             op = `check`;
             //self.state = 2;
         } else {
@@ -115,7 +119,7 @@ function addClickHandler(itemId) {
     });
 }
 
-function reload_items() {
+function reloadItems() {
     let itemsContainer = document.getElementById('items');
     itemsContainer.innerHTML = "Loading...";
     let req = new XMLHttpRequest();
@@ -126,30 +130,58 @@ function reload_items() {
         if (this.status == 200) {
             let json = JSON.parse(this.response);
             Object.values(json.categories).forEach(cat => {
-                itemsContainer.innerHTML += `<h2 id="lcat_${cat.short}">${cat.name}</h2><div id="cat_${cat.short}"></div>`
-                catContainer = document.getElementById(`cat_${cat.short}`);
+                let catLabel = document.createElement("h2");
+                catLabel.id = `lcat_${cat.short}`;
+                catLabel.innerText = cat.name;
+                itemsContainer.appendChild(catLabel);
+                catContainer = document.createElement('div');
+                catContainer.id = `cat_${cat.short}`;
+                itemsContainer.appendChild(catContainer);
                 Object.values(cat.items).forEach(itm => {
-                    let itemId = `${cat.short}-${itm.name}`;
-                    catContainer.innerHTML += `<div class="item-container" id="${itemId}"><span class="item-label" id="${itemId}-label"></span><span class="item-comment" id="${itemId}-comment"></span><a class="item-edit" id="${itemId}-edit" href="edit-itm/${cat.short}/${itm.name}">[ÄNDRA]</a></div>`;
-                    categories[itemId] = cat.short;
-                    setState(itemId, itm.state);
-                    setLabel(itemId, itm.name);
-                    setComment(itemId, itm.comment);
-                    setSynced(itemId, 1);
-                });
-                Object.values(cat.items).forEach(itm => {
-                    let itemId = `${cat.short}-${itm.name}`;
-                    addClickHandler(itemId);
+                    createItem(cat.short, itm.name, itm.state, itm.comment);
                 });
 
             });
-        filter_changed();
+        filterChanged();
         }
     };
     req.send();
 }
 
-function update_item(item, filter) {
+function createItem(catShort, itemName, itemState, itemComment) {
+    let catContainer = document.getElementById(`cat_${catShort}`);
+    let itemId = `${catShort}-${itemName}`;
+
+    let itemContainer = document.createElement('div');
+    itemContainer.classList.add('item-container');
+    itemContainer.id = itemId;
+    let label = document.createElement('span');
+    label.classList.add('item-label');
+    label.id = `${itemId}-label`;
+    itemContainer.appendChild(label);
+    let comment = document.createElement('span');
+    comment.classList.add('item-comment');
+    comment.id = `${itemId}-comment`;
+    itemContainer.appendChild(comment);
+    let edit = document.createElement('a');
+    edit.classList.add('item-edit');
+    edit.id = `${itemId}-edit`;
+    edit.href = `edit-itm/${catShort}/${itemName}`;
+    edit.innerText = '[ÄNDRA]';
+    itemContainer.appendChild(edit);
+
+    catContainer.appendChild(itemContainer);
+
+    categories[itemId] = catShort;
+    setState(itemId, itemState);
+    setLabel(itemId, itemName);
+    setComment(itemId, itemComment);
+    setSynced(itemId, 1);
+
+    addClickHandler(itemId);
+}
+
+function updateItem(item, filter) {
     if (filter) {
         let label = labels[item.id];
         if (label.toUpperCase().indexOf(filter) > -1) {
@@ -170,16 +202,14 @@ function update_item(item, filter) {
     }
 }
 
-function filter_changed() {
+function filterChanged() {
     let input = document.getElementById("search");
     let filter = input.value.toUpperCase();
-    let items = document.getElementsByTagName("x-item");
-    let itemList = Array.prototype.slice.call(items);
+    let itemList = Array.prototype.slice.call(document.getElementsByClassName("item-container"));
     let update = document.getElementById("button-update");
     let stopSearch = document.getElementById("button-stop-search");
     let add = document.getElementById("button-add");
-    let categories = document.getElementsByTagName("h2");
-    let categoryList = Array.prototype.slice.call(categories);
+    let categoryList = Array.prototype.slice.call(document.getElementsByTagName("h2"));
 
     if (filter) {
         update.style.display = "none";
@@ -194,8 +224,8 @@ function filter_changed() {
     let usedCategories = new Set();
 
     itemList.forEach(item => {
-        if (update_item(item, filter)) {
-            usedCategories.add(`lcat_${item.category}`);
+        if (updateItem(item, filter)) {
+            usedCategories.add(`lcat_${categories[item.id]}`);
         };
     });
 
@@ -213,14 +243,14 @@ var ws;
 document.addEventListener('DOMContentLoaded', function() {
     let update = document.getElementById("button-update");
     update.addEventListener("click", e => {
-        reload_items();
+        reloadItems();
     });
 
     let stopSearch = document.getElementById("button-stop-search");
     stopSearch.addEventListener("click", e => {
         let input = document.getElementById("search");
         input.value = "";
-        filter_changed();
+        filterChanged();
     });
 
     let add = document.getElementById("button-add");
@@ -230,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location = `new-itm/first/${name}`;
     });
 
-    reload_items();
+    reloadItems();
 
     if ("WebSocket" in window) {
         var ws = new WebSocket("ws://localhost:8000/ws");
@@ -242,17 +272,33 @@ document.addEventListener('DOMContentLoaded', function() {
         ws.onmessage = function(evt) {
             let data = evt.data;
             let obj = JSON.parse(data);
-            if (obj.old !== undefined) {  // there is an old item that we should update
+            if (obj.old !== null) {  // there is an old item that we should update
                 var itemId = getItemId(obj.old.category.short, obj.old.name);
                 var item = document.getElementById(itemId);
-            } else if (obj.new !== undefined) {  // this is a new item
-                var itemId = getItemId(obj.new.category.short, obj.new.name);
-                var item = document.createElement("div");
-                // code goes here
+            } else if (obj.new !== null) {  // this is a new item
+                createItem(obj.new.category.short, obj.new.name, obj.new.state, obj.new.comment);
+                filterChanged();
+                return;
             }
 
             if (!item) {
                 console.warn(`No such item: ${obj.old.category.short}-${obj.old.name}`);
+            }
+
+            if (obj.new === null) {  // the item was deleted
+                let itemId = item.id;
+                item.remove();
+                delete categories[itemId];
+                delete states[itemId];
+                delete syncs[itemId];
+                delete labels[itemId];
+                filterChanged();
+                return;
+            }
+
+            if (obj.old.name !== obj.new.name) {
+                reloadItems();
+                return;
             }
 
             setState(itemId, obj.new.state);
@@ -262,10 +308,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let input = document.getElementById("search");
             let filter = input.value.toUpperCase();
-            update_item(item, filter);
+            updateItem(item, filter);
         };
 
         ws.onclose = function() {
+            console.log("Disconnected to websocket");
         };
     }
 });
