@@ -1,8 +1,12 @@
 import asyncio
 from enum import Enum
+from . import logging
 from .category import Category, Categories
 from itertools import groupby
 from typing import List
+
+
+logger = logging.getLogger(__name__)
 
 
 class ItemState(Enum):
@@ -41,7 +45,11 @@ class Item:
         return Item(name, category, state, comment)
 
     def __repr__(self):
-        x = 'x' if self.state is ItemState.checked else ' '
+        x = {
+            ItemState.checked: 'x',
+            ItemState.archived: '-',
+            ItemState.unchecked: ' ',
+        }.get(self.state)
         comment = f' ({self.comment})' if self.comment else ''
         return f'[{x}] {self.category.short}/{self.name}{comment}'
 
@@ -59,30 +67,35 @@ class Item:
         old_name = self.name
         self.name = name
         if old_name != name:
+            logger.debug(f'{old_name} -> {name}')
             self._callback(old_name=old_name)
 
     def move(self, category):
         old_category = self.category.short
         self.category = category
         if old_category != category.short:
+            logger.debug(f'{self.name} {old_category} -> {category}')
             self._callback(old_category=old_category)
 
     def check(self):
         if self.state is ItemState.checked:
             return
         self.state = ItemState.checked
+        logger.debug(repr(self))
         self._callback()
 
     def uncheck(self):
         if self.state is ItemState.unchecked:
             return
         self.state = ItemState.unchecked
+        logger.debug(repr(self))
         self._callback()
 
     def archive(self):
         if self.state is ItemState.archived:
             return
         self.state = ItemState.archived
+        logger.debug(repr(self))
         self._callback()
 
     def set_comment(self, comment):
@@ -92,12 +105,14 @@ class Item:
             if self.comment == comment:
                 return
             self.comment = comment
+            logger.debug(repr(self))
             self._callback()
 
     def uncomment(self):
         if self.comment is None:
             return
         self.comment = None
+        logger.debug(repr(self))
         self._callback()
 
     def is_checked(self):

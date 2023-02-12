@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (obj.old.name !== obj.new.name) {
+            if (obj.old.name !== obj.new.name || obj.old.category.short !== obj.new.category.short) {
                 reloadItems();
                 return;
             }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, logging, asyncio
+import os, asyncio
 
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, status, Query, WebSocket, WebSocketDisconnect
@@ -12,6 +12,7 @@ from handlapy.category import Categories
 from handlapy.item import ItemList, Item, ItemState
 from handlapy.db import Database
 from handlapy.websocket import ConnectionManager
+from handlapy import logging
 
 
 app = FastAPI()
@@ -30,9 +31,6 @@ with open('token', 'r') as tp:
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename=f'handla-{security_token}.log',
-                    level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(threadName)s - %(name)s - %(message)s')
 
 
 async def check_token(token: str):
@@ -44,6 +42,7 @@ async def check_token(token: str):
 
 @app.get('/favicon.ico', include_in_schema=False)
 async def favicon(request: Request):
+    logger.info('Favicon')
     return FileResponse('handlapy/static/favicon.ico')
 
 
@@ -163,6 +162,7 @@ async def index_html(request: Request,
                      new_comment: Optional[str] = Query(None),
                      token: str = Depends(check_token)):
 
+    logger.info('index')
     if old_name and old_category:
         print(is_new, old_category, old_name)
         prev = None
