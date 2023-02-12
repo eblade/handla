@@ -1,3 +1,4 @@
+import asyncio
 from enum import Enum
 from .category import Category, Categories
 from itertools import groupby
@@ -6,7 +7,8 @@ from typing import List
 
 class ItemState(Enum):
     unchecked = 0
-    checked = 1
+    archived = 1
+    checked = 2
 
 
 class Item:
@@ -21,14 +23,18 @@ class Item:
         return dict(
             name=self.name,
             category=self.category.dict(),
-            state=self.state,
+            state=self.state.value,
             comment=self.comment,
         )
 
     @classmethod
     def from_db(self, categories: Categories, name: str, category_short: str, state_value: int, comment: str):
         category = categories[category_short]
-        state = ItemState.checked if state_value == 1 else ItemState.unchecked
+        state = {
+            0: ItemState.unchecked,
+            1: ItemState.archived,
+            2: ItemState.checked,
+        }.get(state_value, 0)
         return Item(name, category, state, comment)
 
     def __repr__(self):
@@ -70,6 +76,12 @@ class Item:
         self.state = ItemState.unchecked
         self._callback()
 
+    def archive(self):
+        if self.state is ItemState.archived:
+            return
+        self.state = ItemState.archived
+        self._callback()
+
     def set_comment(self, comment):
         if not comment:
             self.uncomment()
@@ -98,6 +110,7 @@ class ItemList:
         for item in self.items:
             item.connect(self)
         self.db = db
+        self._lock = asyncio.Lock()
 
     def load_from_file(self, path, categories: Categories):
         keys = set()
@@ -124,33 +137,37 @@ class ItemList:
     def with_db(cls, db, categories: Categories):
         return cls(db.select(lambda *data: Item.from_db(categories, *data)), db)
 
-    def by_category(self):
-        in_order = sorted((item for item in self.items), key=lambda x: (x.category.ordinal, x.name))
-        grouped = groupby(in_order, lambda x: x.category)
-        return {
-            'categories': [
-                {
-                    'name': group[0].name,
-                    'short': group[0].short,
-                    'items': [item.dict() for item in group[1]]
-                } for group in grouped
-            ]
-        }
+    async def by_category(self):
+        async with self._lock:
+            in_order = sorted((item for item in self.items), key=lambda x: (x.category.ordinal, x.name))
+            grouped = groupby(in_order, lambda x: x.category)
+            return {
+                'categories': [
+                    {
+                        'name': group[0].name,
+                        'short': group[0].short,
+                        'items': [item.dict() for item in group[1]]
+                    } for group in grouped
+                ]
+            }
 
-    def get_item(self, category_short, item_name):
-        return next((item for item in self.items if item.category.short == category_short and item.name == item_name), None)
+    async def get_item(self, category_short, item_name):
+        async with self._lock:
+            return next((item for item in self.items if item.category.short == category_short and item.name == item_name), None)
 
-    def add_item(self, item: Item):
-        for existing_item in self.items:
-            if item == existing_item:
-                raise KeyError(f'Item {item} already exists')
-        item.connect(self)
-        self.items.append(item)
-        self.callback(item.name, item.category.short, item)
+    async def add_item(self, item: Item):
+        async with self._lock:
+            for existing_item in self.items:
+                if item == existing_item:
+                    raise KeyError(f'Item {item} already exists')
+            item.connect(self)
+            self.items.append(item)
+            self.callback(item.name, item.category.short, item)
 
-    def delete_item(self, item: Item):
-        self.items.remove(item)
-        self.db.delete(item.name, item.category.short)
+    async def delete_item(self, item: Item):
+        async with self._lock:
+            self.items.remove(item)
+            self.db.delete(item.name, item.category.short)
 
     def callback(self, old_name: str, old_category: str, item: Item):
         if self.db is None:
