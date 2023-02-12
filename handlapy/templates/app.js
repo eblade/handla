@@ -35,17 +35,17 @@ function show(itemId) {
     label.innerText = labels[itemId];
 }
 
-function showForAdd() {
+function showForAdd(itemId) {
     let item = document.getElementById(itemId);
     item.style.display = "";
     let label = document.getElementById(`${itemId}-label`);
     label.style.textDecoration = "none";
     let state = states[itemId];
     if (state == ARCHIVED || state == CHECKED) {
-        label.innerText = "+ " + this.label;
+        label.innerText = "+ " + labels[itemId];
         label.style.color = "#282";
     } else {
-        label.innerText = "- " + this.label;
+        label.innerText = "- " + labels[itemId];
         label.style.color = "#822";
     }
 }
@@ -207,16 +207,19 @@ function filterChanged() {
     let filter = input.value.toUpperCase();
     let itemList = Array.prototype.slice.call(document.getElementsByClassName("item-container"));
     let update = document.getElementById("button-update");
+    let archive = document.getElementById("button-archive");
     let stopSearch = document.getElementById("button-stop-search");
     let add = document.getElementById("button-add");
     let categoryList = Array.prototype.slice.call(document.getElementsByTagName("h2"));
 
     if (filter) {
         update.style.display = "none";
+        archive.style.display = "none";
         stopSearch.style.display = "";
         add.style.display = "";
     } else {
         update.style.display = "";
+        archive.style.display = "";
         stopSearch.style.display = "none";
         add.style.display = "none";
     }
@@ -244,6 +247,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let update = document.getElementById("button-update");
     update.addEventListener("click", e => {
         reloadItems();
+    });
+
+    let archive = document.getElementById("button-archive");
+    archive.addEventListener("click", e => {
+        archiveItems();
     });
 
     let stopSearch = document.getElementById("button-stop-search");
