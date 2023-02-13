@@ -62,6 +62,14 @@ WantedBy=multi-user.target
 #            proxy_buffering off;
 #        }
 #
+#    location /s/token/ws {
+#        proxy_pass http://127.0.0.1:8001;
+#        proxy_http_version 1.1;
+#        proxy_set_header Upgrade $http_upgrade;
+#        proxy_set_header Connection "Upgrade";
+#        proxy_set_header Host $host;
+#    }
+#
 #        ssl_certificate /etc/letsencrypt/live/mat.egneblad.se/fullchain.pem;
 #        ssl_certificate_key /etc/letsencrypt/live/mat.egneblad.se/privkey.pem;
 #        ssl_trusted_certificate /etc/letsencrypt/live/mat.egneblad.se/chain.pem;

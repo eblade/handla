@@ -238,7 +238,11 @@ function filterChanged() {
 var ws;
 
 function setUpWebSocket() {
-    ws = new WebSocket("ws://localhost:8000/ws");
+    let protocol = location.protocol == "http:" ? "ws" : "wss";
+    let host = location.host;
+    let path = location.pathname.replace("index.html", "ws");
+    let url = `${protocol}://${host}${path}`;
+    ws = new WebSocket(url);
 
     ws.onopen = function() {
         console.log("Connected to websocket");
@@ -288,9 +292,7 @@ function setUpWebSocket() {
 
     ws.onclose = function(e) {
         console.log('Socket closed. Reconnect will be attempted in 1 second.', e.reason);
-        setTimeout(function() {
-            setUpWebSocket();
-        }, 1000);
+        setTimeout(setUpWebSocket, 1000);
     };
 
     ws.onerror = function(err) {

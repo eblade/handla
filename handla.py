@@ -202,8 +202,8 @@ def error_page(request: Request, exc: HTTPException):
     }, status_code=exc.status_code)
 
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+@app.websocket("/s/{token}/ws")
+async def websocket_endpoint(websocket: WebSocket, token: str = Depends(check_token)):
     await webman.connect(websocket)
     try:
         while True:
