@@ -286,8 +286,16 @@ function setUpWebSocket() {
         updateItem(item, filter);
     };
 
-    ws.onclose = function() {
-        console.log("Disconnected to websocket");
+    ws.onclose = function(e) {
+        console.log('Socket closed. Reconnect will be attempted in 1 second.', e.reason);
+        setTimeout(function() {
+            setUpWebSocket();
+        }, 1000);
+    };
+
+    ws.onerror = function(err) {
+        console.error('Socket error: ', err.message, 'Closing socket');
+        ws.close();
     };
 }
 
