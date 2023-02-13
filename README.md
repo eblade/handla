@@ -15,6 +15,7 @@ Familjens handlingslista. Mjukvara på svenska.
 * Man kan tillfälligt kommentera varor
 * Ångra att bocka av en vara
 * Sök bland varor
+* Live-uppdateringar via websocket
 
 ## Krav
 
