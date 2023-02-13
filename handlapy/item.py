@@ -95,6 +95,7 @@ class Item:
         if self.state is ItemState.archived:
             return
         self.state = ItemState.archived
+        self.comment = None
         logger.debug(repr(self))
         self._callback()
 
@@ -186,6 +187,15 @@ class ItemList:
         async with self._lock:
             self.items.remove(item)
             self.db.delete(item.name, item.category.short)
+
+    async def archive_all_checked(self):
+        logger.debug('Archiving checked items')
+        async with self._lock:
+            for item in self.items:
+                if item.state is ItemState.checked:
+                    prev = item.copy()
+                    item.archive()
+                    yield prev, item
 
     def callback(self, old_name: str, old_category: str, item: Item):
         if self.db is None:

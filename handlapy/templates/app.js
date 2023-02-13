@@ -67,7 +67,7 @@ function setState(itemId, state) {
     let comment = document.getElementById(`${itemId}-comment`);
     if (state == ARCHIVED) {
         label.style.textDecoration = "line-through";
-        label.style.color = "#888";
+        label.style.color = "#aaa";
         comment.style.color = "#888";
     } else if (state == CHECKED) {
         label.style.textDecoration = "line-through";
@@ -99,12 +99,12 @@ function addClickHandler(itemId) {
         let op = `uncheck`;
         if (state == UNCHECKED) {
             op = `check`;
-            //self.state = 2;
+            setState(itemId, CHECKED);
         } else {
-            //self.state = 0;
+            setState(itemId, UNCHECKED);
         }
         setSynced(itemId, 0);
-        //self.update();
+
         let req = Object();
         req.operation = op;
         req.category = category;
@@ -289,6 +289,12 @@ function setUpWebSocket() {
     ws.onclose = function() {
         console.log("Disconnected to websocket");
     };
+}
+
+function archiveItems() {
+    let req = Object();
+    req.operation = "archive";
+    ws.send(JSON.stringify(req));
 }
 
 document.addEventListener('DOMContentLoaded', function() {

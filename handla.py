@@ -210,9 +210,12 @@ async def websocket_endpoint(websocket: WebSocket):
             req = await websocket.receive_json()
             logger.debug(f'Websocket got {req}')
             operation = req.get('operation')
-            print('operation', operation)
+            logger.debug(f'operation = {operation}')
             if operation in ('check', 'uncheck'):
                 await mod_item(req.get('category'), req.get('name'), operation, None)
+            elif operation == 'archive':
+                async for prev, item in state.items.archive_all_checked():
+                    await webman.send(dict(old=prev.dict(), new=item.dict()))
 
     except WebSocketDisconnect:
         await webman.disconnect(websocket)
