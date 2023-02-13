@@ -105,17 +105,11 @@ function addClickHandler(itemId) {
         }
         setSynced(itemId, 0);
         //self.update();
-        let req = new XMLHttpRequest();
-        req.open('PUT', `itm/${category}/${label}/${op}`, true);
-        req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        req.onload = function() {
-            //if (this.status == 200) {
-            //    let json = JSON.parse(this.response);
-            //    self.state = json.state;
-            //    self.synced = 1;
-            //}
-        };
-        req.send();
+        let req = Object();
+        req.operation = op;
+        req.category = category;
+        req.name = label;
+        ws.send(JSON.stringify(req));
     });
 }
 
@@ -243,6 +237,60 @@ function filterChanged() {
 
 var ws;
 
+function setUpWebSocket() {
+    ws = new WebSocket("ws://localhost:8000/ws");
+
+    ws.onopen = function() {
+        console.log("Connected to websocket");
+    };
+
+    ws.onmessage = function(evt) {
+        let data = evt.data;
+        let obj = JSON.parse(data);
+        if (obj.old !== null) {  // there is an old item that we should update
+            var itemId = getItemId(obj.old.category.short, obj.old.name);
+            var item = document.getElementById(itemId);
+        } else if (obj.new !== null) {  // this is a new item
+            createItem(obj.new.category.short, obj.new.name, obj.new.state, obj.new.comment);
+            filterChanged();
+            return;
+        }
+
+        if (!item) {
+            console.warn(`No such item: ${obj.old.category.short}-${obj.old.name}`);
+        }
+
+        if (obj.new === null) {  // the item was deleted
+            let itemId = item.id;
+            item.remove();
+            delete categories[itemId];
+            delete states[itemId];
+            delete syncs[itemId];
+            delete labels[itemId];
+            filterChanged();
+            return;
+        }
+
+        if (obj.old.name !== obj.new.name || obj.old.category.short !== obj.new.category.short) {
+            reloadItems();
+            return;
+        }
+
+        setState(itemId, obj.new.state);
+        setLabel(itemId, obj.new.name);
+        setComment(itemId, obj.new.comment);
+        setSynced(itemId, 1);
+
+        let input = document.getElementById("search");
+        let filter = input.value.toUpperCase();
+        updateItem(item, filter);
+    };
+
+    ws.onclose = function() {
+        console.log("Disconnected to websocket");
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     let update = document.getElementById("button-update");
     update.addEventListener("click", e => {
@@ -269,58 +317,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     reloadItems();
-
-    if ("WebSocket" in window) {
-        var ws = new WebSocket("ws://localhost:8000/ws");
-
-        ws.onopen = function() {
-            console.log("Connected to websocket");
-        };
-
-        ws.onmessage = function(evt) {
-            let data = evt.data;
-            let obj = JSON.parse(data);
-            if (obj.old !== null) {  // there is an old item that we should update
-                var itemId = getItemId(obj.old.category.short, obj.old.name);
-                var item = document.getElementById(itemId);
-            } else if (obj.new !== null) {  // this is a new item
-                createItem(obj.new.category.short, obj.new.name, obj.new.state, obj.new.comment);
-                filterChanged();
-                return;
-            }
-
-            if (!item) {
-                console.warn(`No such item: ${obj.old.category.short}-${obj.old.name}`);
-            }
-
-            if (obj.new === null) {  // the item was deleted
-                let itemId = item.id;
-                item.remove();
-                delete categories[itemId];
-                delete states[itemId];
-                delete syncs[itemId];
-                delete labels[itemId];
-                filterChanged();
-                return;
-            }
-
-            if (obj.old.name !== obj.new.name || obj.old.category.short !== obj.new.category.short) {
-                reloadItems();
-                return;
-            }
-
-            setState(itemId, obj.new.state);
-            setLabel(itemId, obj.new.name);
-            setComment(itemId, obj.new.comment);
-            setSynced(itemId, 1);
-
-            let input = document.getElementById("search");
-            let filter = input.value.toUpperCase();
-            updateItem(item, filter);
-        };
-
-        ws.onclose = function() {
-            console.log("Disconnected to websocket");
-        };
-    }
+    setUpWebSocket();
 });

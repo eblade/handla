@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, asyncio
+import os, asyncio, json
 
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, status, Query, WebSocket, WebSocketDisconnect
@@ -207,8 +207,13 @@ async def websocket_endpoint(websocket: WebSocket):
     await webman.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-            await websocket.send_text(f'Message text was: {data}')
+            req = await websocket.receive_json()
+            logger.debug(f'Websocket got {req}')
+            operation = req.get('operation')
+            print('operation', operation)
+            if operation in ('check', 'uncheck'):
+                await mod_item(req.get('category'), req.get('name'), operation, None)
+
     except WebSocketDisconnect:
         await webman.disconnect(websocket)
 
