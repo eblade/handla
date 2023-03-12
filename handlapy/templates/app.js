@@ -92,7 +92,7 @@ function setSynced(itemId, synced) {
 
 function addClickHandler(itemId) {
     let elem = document.getElementById(`${itemId}-label`);
-    elem.addEventListener('click', e => {
+    elem.addEventListener('click', _ => {
         let label = labels[itemId];
         let state = states[itemId];
         let category = categories[itemId];
@@ -309,24 +309,24 @@ function archiveItems() {
 
 document.addEventListener('DOMContentLoaded', function() {
     let update = document.getElementById("button-update");
-    update.addEventListener("click", e => {
+    update.addEventListener("click", _ => {
         reloadItems();
     });
 
     let archive = document.getElementById("button-archive");
-    archive.addEventListener("click", e => {
+    archive.addEventListener("click", _ => {
         archiveItems();
     });
 
     let stopSearch = document.getElementById("button-stop-search");
-    stopSearch.addEventListener("click", e => {
+    stopSearch.addEventListener("click", _ => {
         let input = document.getElementById("search");
         input.value = "";
         filterChanged();
     });
 
     let add = document.getElementById("button-add");
-    add.addEventListener("click", e => {
+    add.addEventListener("click", _ => {
         let input = document.getElementById("search");
         let name = input.value;
         window.location = `new-itm/first/${name}`;
